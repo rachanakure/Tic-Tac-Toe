@@ -119,7 +119,7 @@ def move():
 def leaderboard():
     conn = sqlite3.connect('tictactoe.db')
     c = conn.cursor()
-    c.execute('SELECT name, wins FROM users ORDER BY wins DESC limit 5')
+    c.execute('SELECT name, wins FROM users ORDER BY wins DESC limit 10')
     leaderboard = c.fetchall()
     conn.close()
     return jsonify({"leaderboard": leaderboard})
