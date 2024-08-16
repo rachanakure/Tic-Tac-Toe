@@ -55,10 +55,10 @@ def check_winner(board):
 
 @app.route('/start_game', methods=['POST'])
 def start_game():
-    data = request.get_json()
-    user = get_or_create_user(data['name'])
-    board = [None] * 9
-    return jsonify({"board": board, "message": "Game started!"})
+    data = request.json
+    player_name = data.get('name')
+    board = [None] * 9  # Example board setup
+    return jsonify({"board": board, "message": f"Game started for {player_name}!"})
 
 @app.route('/move', methods=['POST'])
 def move():
