@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import sqlite3
 import random
 
-app = Flask(__name__, template_folder='.')
+app = Flask(__name__)
 
 # Initialize SQLite database
 def init_db():
@@ -128,7 +128,6 @@ def leaderboard():
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
