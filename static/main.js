@@ -11,6 +11,7 @@ $(document).ready(function() {
 async function startGame() {
     gameEnd = false;
     playerName = $('#playerName').val();
+    updateLeaderboard();
     
     if (playerName === '') {
         $('.error').text('Enter a Name').css('padding', '5px');

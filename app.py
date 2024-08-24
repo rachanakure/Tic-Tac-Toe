@@ -85,8 +85,8 @@ def get_best_move(board, player):
     for i in range(9):
         if board[i] is None:
             board[i] = opponent
-            # if check_winner(board, opponent):
-            if check_winner(board, opponent) and (random.choice([True, False])):
+            if check_winner(board, opponent):
+            # if check_winner(board, opponent) and (random.choice([True, False])):
                 board[i] = None
                 return i
         
@@ -126,7 +126,6 @@ def move():
     if board[position] is None:
         board[position] = player
         winner = check_winner(board, player)
-        print('--------->', winner)
         
         with sqlite3.connect('tictactoe.db') as conn:
             c = conn.cursor()
