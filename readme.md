@@ -2,8 +2,8 @@
 
 This is a simple web-based Tic-Tac-Toe game built using Flask, SQLite, and NumPy. The game allows users to play against an AI opponent, and it also keeps track of wins, losses, and draws. User statistics are stored in an SQLite database, and a leaderboard is available to display the top players.
 
-![Tic-Tac-Toe Game Preview](1.png)
 ![Tic-Tac-Toe Game Preview](2.png)
+![Tic-Tac-Toe Game Preview](1.png)
 
 ## Features
 
@@ -16,8 +16,6 @@ This is a simple web-based Tic-Tac-Toe game built using Flask, SQLite, and NumPy
 
 You can try out the game live at: [Tic-Tac-Toe Demo](https://tic-tac-toe-yfxi.onrender.com/)
 
-![alt preview](1.png)
-![alt preview](2.png)
 
 ## Installation
 
