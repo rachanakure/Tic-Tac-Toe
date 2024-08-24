@@ -1,64 +1,89 @@
 let board = [];
 let player = 'X';
 let playerName = '';
+let gameEnd = false;
 
-function startGame() {
-    playerName = document.getElementById('playerName').value;
-    fetch('/start_game', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName })
-    })
-    .then(response => response.json())
-    .then(data => {
-        board = data.board;
-        document.getElementById('message').innerText = data.message;
+$(document).ready(function() {
+    // Bind the start game button to the startGame function
+    $('#startGameButton').on('click', startGame);
+});
+
+async function startGame() {
+    gameEnd = false;
+    playerName = $('#playerName').val();
+    updateLeaderboard();
+    
+    if (playerName === '') {
+        $('.error').text('Enter a Name').css('padding', '5px');
+        return;
+    }
+    
+    $('.input_container').hide();
+
+    try {
+        // Use Axios to make a POST request to start the game
+        const response = await axios.post('/start_game', { name: playerName });
+        board = response.data.board;
+        console.log(board);
+        $('#message').text(response.data.message);
         renderBoard();
-    });
+    } catch (error) {
+        console.error('Error starting game:', error);
+    }
 }
 
 function renderBoard() {
-    const boardDiv = document.getElementById('board');
-    boardDiv.innerHTML = '';
-    board.forEach((cell, index) => {
-        const cellDiv = document.createElement('div');
-        cellDiv.classList.add('cell');
-        cellDiv.innerText = cell ? cell : '';
-        if (!cell && !document.getElementById('message').innerText.includes("wins") && 
-            !document.getElementById('message').innerText.includes("draw")) {
-            cellDiv.onclick = () => makeMove(index);
-        }
-        boardDiv.appendChild(cellDiv);
-    });
-}
-
-function makeMove(position) {
-    fetch('/move', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ board: board, position: position, player: player, name: playerName })
-    })
-    .then(response => response.json())
-    .then(data => {
-        board = data.board;
-        document.getElementById('message').innerText = data.message;
-        if (data.winner) {
-            updateLeaderboard();
-        }
-        renderBoard(); // Always render the board to reflect the latest state
-    });
-}
-
-function updateLeaderboard() {
-    fetch('/leaderboard')
-    .then(response => response.json())
-    .then(data => {
-        const leaderboardList = document.getElementById('leaderboardList');
-        leaderboardList.innerHTML = '';
-        data.leaderboard.forEach(user => {
-            const li = document.createElement('li');
-            li.innerText = `${user[0]}: ${user[1]} wins`;
-            leaderboardList.appendChild(li);
+    $('.cell').each(function(index) {
+        $(this).text(board[index]);
+        $(this).off('click').on('click', function() {
+            makeMove(index);
         });
     });
+}
+
+async function makeMove(position) {
+    if (gameEnd) {
+        return;
+    }
+    
+    console.log(position);
+
+    try {
+        const response = await axios.post('/move', {
+            board: board,
+            position: position,
+            player: player,
+            name: playerName
+        });
+
+        board = response.data.board;
+        console.log(response.data);
+        $('#message').text(response.data.message);
+
+        if (response.data.winner) {
+            gameEnd = true;
+            updateLeaderboard();
+            setTimeout(() => {
+                startGame();
+
+            }, 2000);
+        }
+
+        renderBoard();
+    } catch (error) {
+        console.error('Error making move:', error);
+    }
+}
+
+async function updateLeaderboard() {
+    try {
+        const response = await axios.get('/leaderboard');
+        const leaderboardList = $('#leaderboardList');
+        leaderboardList.empty();
+        response.data.leaderboard.forEach(user => {
+            leaderboardList.append(`<li>${user[0]}: ${user[1]} wins</li>`);
+        });
+    } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+    }
 }
