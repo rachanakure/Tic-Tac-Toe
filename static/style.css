@@ -158,6 +158,22 @@ input:focus{
 
 }
 
+.scoreContainer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.scoreDiv{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 20px;
+}
+
 #leaderboard {
     margin-top: 20px;
     background-color: peachpuff;

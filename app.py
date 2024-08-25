@@ -40,7 +40,9 @@ def get_or_create_user(name):
             conn.commit()
             c.execute('SELECT * FROM users WHERE name=?', (name,))
             user = c.fetchone()
+        print("user --> ",user)
     return user
+
 
 
 
@@ -48,6 +50,7 @@ def get_or_create_user(name):
 def start_game():
     data = request.json
     player_name = data.get('name')
+    get_or_create_user(player_name)
     board = [None] * 9
     return jsonify({"board": board, "message": f"Game started for {player_name}!"})
 
@@ -91,16 +94,20 @@ def get_best_move(board, player):
                 return i
         
             board[i] = None
+
+    #  Prefer corners if available
+    corners = [0, 2, 6, 8]
+    available_corners = [i for i in corners if board[i] is None]
+    if available_corners:
+        choice = random.choice(available_corners)
+        print('corner block', choice)
+        return choice
     
     #  Prefer center if available
     if board[4] is None:
         return 4
     
-    #  Prefer corners if available
-    corners = [0, 2, 6, 8]
-    available_corners = [i for i in corners if board[i] is None]
-    if available_corners:
-        return random.choice(available_corners)
+    
     
     # . Prefer edges if available
     edges = [1, 3, 5, 7]
@@ -167,11 +174,24 @@ def move():
 
 
 
-@app.route('/leaderboard', methods=['GET'])
-def leaderboard():
+@app.route('/updateLeaderboard',methods=['POST'])
+def updateLeaderboard():
+    data = request.get_json()
+    userName = data['userName']
+    wins = data['wins']
+    losses = data['losses']
+    draws = data['draws']
+
     with sqlite3.connect('tictactoe.db') as conn:
         c = conn.cursor()
-        c.execute('SELECT name, wins FROM users ORDER BY wins DESC LIMIT 10')
+        c.execute('UPDATE users SET wins = ?, losses = ?, draws = ? WHERE name = ?', (wins, losses, draws, userName))
+        conn.commit()
+
+@app.route('/getLeaderBoard', methods=['GET'])
+def getLeaderBoard():
+    with sqlite3.connect('tictactoe.db') as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM users ORDER BY wins DESC')
         leaderboard = c.fetchall()
         print(leaderboard)
     return jsonify({"leaderboard": leaderboard})
@@ -181,4 +201,5 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
+    # app.run(host='127.0.0.1', port=8080, debug=True)

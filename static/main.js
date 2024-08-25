@@ -3,15 +3,23 @@ let player = 'X';
 let playerName = '';
 let gameEnd = false;
 
-$(document).ready(function() {
-    // Bind the start game button to the startGame function
-    $('#startGameButton').on('click', startGame);
-});
+let winsCount=0, lossesCount=0, drawsCount=0;
+
+let wins = $("#wins");
+let losses = $("#losses");
+let draws = $("#draws");
+
 
 async function startGame() {
+    wins.text(winsCount);
+    losses.text(lossesCount);
+    draws.text(drawsCount);
+    
+    console.log(winsCount, lossesCount, drawsCount)
+
     gameEnd = false;
     playerName = $('#playerName').val();
-    updateLeaderboard();
+    await getLeaderBoard();
     
     if (playerName === '') {
         $('.error').text('Enter a Name').css('padding', '5px');
@@ -21,7 +29,6 @@ async function startGame() {
     $('.input_container').hide();
 
     try {
-        // Use Axios to make a POST request to start the game
         const response = await axios.post('/start_game', { name: playerName });
         board = response.data.board;
         console.log(board);
@@ -60,7 +67,20 @@ async function makeMove(position) {
         console.log(response.data);
         $('#message').text(response.data.message);
 
-        if (response.data.winner) {
+        let result = response.data.winner;
+        console.log("---> ",result);
+
+        if (result == 'draw'){
+            draws.text(drawsCount++);
+        }
+        else if(result=='O'){
+            losses.text(lossesCount++);
+        }
+        else if(result){
+            wins.text(winsCount++);
+        }
+        
+        if(result){
             gameEnd = true;
             updateLeaderboard();
             setTimeout(() => {
@@ -77,7 +97,12 @@ async function makeMove(position) {
 
 async function updateLeaderboard() {
     try {
-        const response = await axios.get('/leaderboard');
+        const response = await axios.post('/updateLeaderboard', {
+            userName: playerName,
+            wins: winsCount,
+            losses: lossesCount,
+            draws: drawsCount
+        });
         const leaderboardList = $('#leaderboardList');
         leaderboardList.empty();
         response.data.leaderboard.forEach(user => {
@@ -87,3 +112,10 @@ async function updateLeaderboard() {
         console.error('Error fetching leaderboard:', error);
     }
 }
+
+const getLeaderBoard = async function(){
+    const response = await axios.get('/getLeaderBoard');
+    const data = response.data;
+    console.log(data);
+
+};
