@@ -40,7 +40,6 @@ def get_or_create_user(name):
             conn.commit()
             c.execute('SELECT * FROM users WHERE name=?', (name,))
             user = c.fetchone()
-        print("user --> ",user)
     return user
 
 
@@ -88,8 +87,8 @@ def get_best_move(board, player):
     for i in range(9):
         if board[i] is None:
             board[i] = opponent
-            if check_winner(board, opponent):
-            # if check_winner(board, opponent) and (random.choice([True, False])):
+            # if check_winner(board, opponent):
+            if check_winner(board, opponent) and (random.choice([True, False])):
                 board[i] = None
                 return i
         
@@ -100,7 +99,6 @@ def get_best_move(board, player):
     available_corners = [i for i in corners if board[i] is None]
     if available_corners:
         choice = random.choice(available_corners)
-        print('corner block', choice)
         return choice
     
     #  Prefer center if available
@@ -194,7 +192,6 @@ def getLeaderBoard():
         c = conn.cursor()
         c.execute('SELECT * FROM users ORDER BY wins DESC')
         leaderboard = c.fetchall()
-        print(leaderboard)
     return jsonify({"leaderboard": leaderboard})
 
 @app.route('/')
