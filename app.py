@@ -186,6 +186,7 @@ def updateLeaderboard():
         c = conn.cursor()
         c.execute('UPDATE users SET wins = ?, losses = ?, draws = ? WHERE name = ?', (wins, losses, draws, userName))
         conn.commit()
+    return jsonify({"status": 'true'})
 
 @app.route('/getLeaderBoard', methods=['GET'])
 def getLeaderBoard():
@@ -201,5 +202,5 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
     # app.run(host='127.0.0.1', port=8080, debug=True)

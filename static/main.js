@@ -3,32 +3,31 @@ let player = 'X';
 let playerName = '';
 let gameEnd = false;
 
-let winsCount=0, lossesCount=0, drawsCount=0;
+let winsCount = 0, lossesCount = 0, drawsCount = 0;
 
 let wins = $("#wins");
 let losses = $("#losses");
 let draws = $("#draws");
-
 
 async function startGame() {
     wins.text(winsCount);
     losses.text(lossesCount);
     draws.text(drawsCount);
     
-    console.log(winsCount, lossesCount, drawsCount)
+    console.log(winsCount, lossesCount, drawsCount);
 
     gameEnd = false;
     playerName = $('#playerName').val();
-    await getLeaderBoard();
-    
+
     if (playerName === '') {
         $('.error').text('Enter a Name').css('padding', '5px');
         return;
     }
     
     $('.input_container').hide();
-
+    
     try {
+        await getLeaderBoard(); 
         const response = await axios.post('/start_game', { name: playerName });
         board = response.data.board;
         console.log(board);
@@ -36,6 +35,7 @@ async function startGame() {
         renderBoard();
     } catch (error) {
         console.error('Error starting game:', error);
+        $('#message').text('Error starting game. Please try again.'); // Feedback for the user
     }
 }
 
@@ -68,30 +68,29 @@ async function makeMove(position) {
         $('#message').text(response.data.message);
 
         let result = response.data.winner;
-        console.log("---> ",result);
-
-        if (result == 'draw'){
-            draws.text(drawsCount++);
-        }
-        else if(result=='O'){
-            losses.text(lossesCount++);
-        }
-        else if(result){
-            wins.text(winsCount++);
-        }
+        console.log("---> ", result);
         
-        if(result){
-            gameEnd = true;
-            updateLeaderboard();
-            setTimeout(() => {
-                startGame();
+        if (result) {
+            if (result === 'draw') {
+                drawsCount++;
+                draws.text(drawsCount);
+            } else if (result === 'O') {
+                lossesCount++;
+                losses.text(lossesCount);
+            } else if (result) {
+                winsCount++;
+                wins.text(winsCount);
+            }
 
-            }, 2000);
+            gameEnd = true;
+            await updateLeaderboard(); 
+            setTimeout(startGame, 2000);
         }
 
         renderBoard();
     } catch (error) {
         console.error('Error making move:', error);
+        $('#message').text('Error making move. Please try again.'); // Feedback for the user
     }
 }
 
@@ -103,19 +102,27 @@ async function updateLeaderboard() {
             losses: lossesCount,
             draws: drawsCount
         });
-        const leaderboardList = $('#leaderboardList');
-        leaderboardList.empty();
-        response.data.leaderboard.forEach(user => {
-            leaderboardList.append(`<li>${user[0]}: ${user[1]} wins</li>`);
-        });
+        if (JSON.parse(response.data.status)) {
+            await getLeaderBoard();
+        }
     } catch (error) {
-        console.error('Error fetching leaderboard:', error);
+        console.error('Error updating leaderboard:', error);
     }
 }
 
-const getLeaderBoard = async function(){
-    const response = await axios.get('/getLeaderBoard');
-    const data = response.data;
-    console.log(data);
-
+const getLeaderBoard = async function() {
+    try {
+        const response = await axios.get('/getLeaderBoard');
+        const data = response.data;
+        const leaderboardList = $('#leaderboardList');
+        leaderboardList.empty();
+        if (data.leaderboard.length !== 0) {
+            data.leaderboard.forEach(user => {
+                leaderboardList.append(`<li>${user[1]}: ${user[2]} wins, ${user[3]} losses, ${user[4]} draws</li>`);
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        $('#message').text('Error loading leaderboard. Please try again.'); 
+    }
 };
